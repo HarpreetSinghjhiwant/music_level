@@ -5,153 +5,84 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AppwriteService {
-  final Client client;
-  final Account account;
-  final Databases database;
-  final Storage storage;
-  final GoogleSignIn googleSignIn;
+  late Client _client;
+  late Account _account;
+  late Databases _databases;
+  late Storage _storage;
 
-  // Replace these with your actual values
-  final String appwriteUrl = dotenv.env['APPWRITE_URL']!; // Appwrite server URL
-  final String projectId = dotenv.env['PROJECT_ID']!; // Appwrite Project ID
-  final String databaseId = dotenv.env['DATABASE_ID']!; // Replace with your database ID
-  final String collectionId = dotenv.env['COLLECTION_ID']!; // Collection ID for storing music data
-  final String bucketId = dotenv.env['BUCKET_ID']!; // Bucket ID for storing audio files
+  AppwriteService() {
+    _client = Client()
+      ..setEndpoint('https://${dotenv.env['APPWRITE_URL']}')
+      ..setProject('${dotenv.env['PROJECT_ID']}');
 
-  // Initialize Appwrite client and Google Sign-In with email scope
-  AppwriteService()
-      : client = Client().setEndpoint('https://cloud.appwrite.io/v1').setProject('6763024d0038091d468c'),
-        account = Account(Client().setEndpoint('https://cloud.appwrite.io/v1').setProject('6763024d0038091d468c')),
-        database = Databases(Client().setEndpoint('https://cloud.appwrite.io/v1').setProject('6763024d0038091d468c')),
-        storage = Storage(Client().setEndpoint('https://cloud.appwrite.io/v1').setProject('6763024d0038091d468c')),
-        googleSignIn = GoogleSignIn(scopes: ['email']); // Adding email scope for Google Sign-In
-
-  // Initialize the Appwrite client
-  Future<void> init() async {
-    client.setEndpoint(appwriteUrl) // Set the Appwrite URL
-        .setProject(projectId); // Set the Appwrite Project ID
+    _account = Account(_client);
+    _databases = Databases(_client);
+    _storage = Storage(_client);
   }
 
-  // Google Authentication Sign-In
   Future<User?> signInWithGoogle() async {
     try {
-      final googleUser = await googleSignIn.signIn();
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        clientId: dotenv.env['GOOGLE_CLIENT_ID'], // Add this line
+      );
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       if (googleUser == null) {
-        return null; // User cancelled the sign-in
+        // The user canceled the sign-in
+        return null;
       }
-      final googleAuth = await googleUser.authentication;
 
-      // Use createOAuth2Session with correct URLs for success and failure
-      final result = await account.createOAuth2Session(
-        provider: OAuthProvider.google, // Correct OAuth provider enum
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      final session = await _account.createOAuth2Session(
+        provider: OAuthProvider.google,
+        success: 'https://your-app-url.com/success', // Replace with your success URL
+        failure: 'https://your-app-url.com/failure', // Replace with your failure URL
+        scopes: ['email'],
       );
-      return result;
+
+      return session.user;
     } catch (e) {
-      print('Google sign-in error: $e');
-      throw Exception('Error during Google sign-in');
+      print('Error signing in with Google: $e');
+      return null;
     }
   }
 
-  Future<User?> signInWithMicrosoft() async {
+  Future<Document?> createDocument(
+      String databaseId, String collectionId, Map<String, dynamic> data) async {
     try {
-      final microsoftUser = await MicrosoftSignIn.signIn();
-      if (microsoftUser == null) {
-        return null; // User cancelled the sign-in
-      }
-      final microsoftAuth = await microsoftUser.authentication;
-
-      // Use createOAuth2Session with correct URLs for success and failure
-      final result = await account.createOAuth2Session(
-        provider: OAuthProvider.microsoft, // Correct OAuth provider enum
-      );
-      return result;
-    } catch (e) {
-      print('Microsoft sign-in error: $e');
-      throw Exception('Error during Microsoft sign-in');
-    }
-  }
-
-  Future<User?> signInWithApple() async {
-    try {
-      final appleUser = await AppleSignIn.signIn();
-      if (appleUser == null) {
-        return null; // User cancelled the sign-in
-      }
-      final appleAuth = await appleUser.authentication;
-
-      // Use createOAuth2Session with correct URLs for success and failure
-      final result = await account.createOAuth2Session(
-        provider: OAuthProvider.apple, // Correct OAuth provider enum
-      );
-      return result;
-    } catch (e) {
-      print('Apple sign-in error: $e');
-      throw Exception('Error during Apple sign-in');
-    }
-  }
-
-  // Store music details in the database
-  Future<Document?> storeMusicDetails({
-    required String userId,
-    required String name,
-    required String musicType,
-    required String lyrics,
-    required String audioFileUrl,
-  }) async {
-    try {
-      final document = await database.createDocument(
-        databaseId: databaseId,
-        collectionId: collectionId,
-        // Use null for documentId to auto-generate it
-        documentId: 'unique()', // Appwrite will auto-generate the document ID
-        data: {
-          'userId': userId,
-          'name': name,
-          'musicType': musicType,
-          'lyrics': lyrics,
-          'audioFileUrl': audioFileUrl,
-        },
-      );
+      final document = await _databases.createDocument(
+          databaseId: databaseId,
+          collectionId: collectionId,
+          documentId: 'unique()',
+          permissions: [
+            Permission.read(Role.user('[USER_ID]')),
+            Permission.write(Role.user('[USER_ID]'))
+          ],
+          data: {
+            'name': data['name'],
+            'type': data['type'],
+            'lyrics': data['lyrics'],
+            'audio_url': data['audio_url'],
+            'user_id': data['user_id']
+          });
       return document;
     } catch (e) {
-      print('Error storing music details: $e');
+      print('Error creating document: $e');
       return null;
     }
   }
 
-  // Upload audio file to Appwrite storage
-  Future<String?> uploadAudioFile(String filePath) async {
+  Future<File?> uploadFile(String bucketId, String filePath) async {
     try {
-      final upload = await storage.createFile(
+      final file = await _storage.createFile(
         bucketId: bucketId,
-        file: InputFile.fromPath(path: filePath), // Upload file from path
-        fileId: '', // Auto-generate file ID
+        fileId: 'unique()',
+        file: InputFile.fromPath(path: filePath),
       );
-      return upload.$id; // Returns the file ID for the uploaded file
+      return file;
     } catch (e) {
-      print('Error uploading audio file: $e');
+      print('Error uploading file: $e');
       return null;
-    }
-  }
-
-  // Get the currently authenticated user
-  Future<User?> getCurrentUser() async {
-    try {
-      final user = await account.get();
-      return user;
-    } catch (e) {
-      print('Error fetching user: $e');
-      return null;
-    }
-  }
-
-  // Sign out the user
-  Future<void> signOut() async {
-    try {
-      await account.deleteSession(sessionId: 'current');
-      googleSignIn.signOut();
-    } catch (e) {
-      print('Error signing out: $e');
     }
   }
 }

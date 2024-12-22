@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:music_level/pages/auth/login_page.dart';
+import 'package:music_level/pages/auth/signup_page.dart';
 import 'package:music_level/pages/auth_page.dart';
+import 'package:music_level/pages/main_screen.dart';
+import 'package:music_level/services/appwrite_service.dart';
 
-void main() {
-  Client client = Client();
+AppwriteService appwriteService = AppwriteService();
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
 
-  client
-    .setEndpoint('https://cloud.appwrite.io/v1') // Your Appwrite Endpoint
-    .setProject('5e8cf4f46b5e8')
+  // Load environment variables
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 
@@ -23,9 +28,12 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
         useMaterial3: true,
       ),
-      initialRoute: '/auth', // Set initial route to Login page
+      initialRoute: '/login', // Set initial route to Login page
       routes: {
+        '/': (context) => const MainScreen(),
         '/auth': (context) => const AuthPage(),
+        '/login': (context) => const LoginPage(),
+        '/signup': (context) => const SignUpPage(),
       },
     );
   }
