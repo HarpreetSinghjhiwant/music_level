@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:music_level/pages/auth_page.dart';
 
 void main() {
+  Client client = Client();
+
+  client
+    .setEndpoint('https://cloud.appwrite.io/v1') // Your Appwrite Endpoint
+    .setProject('5e8cf4f46b5e8')
   runApp(const MyApp());
 }
 
