@@ -1,7 +1,9 @@
+import 'package:appwrite/models.dart';
 import 'package:flutter/material.dart';
 import 'package:music_level/components/auth_parts/apple_button.dart';
 import 'package:music_level/components/auth_parts/google_button.dart';
 import 'package:music_level/components/auth_parts/microsoft_button.dart';
+import 'package:music_level/main.dart';
 
 class AuthPage extends StatelessWidget {
   const AuthPage({super.key});
@@ -21,7 +23,7 @@ class AuthPage extends StatelessWidget {
             height: 100,
           ),
           const SizedBox(height: 24), // Space below logo
-      
+
           // Title
           Text(
             'Continue as',
@@ -32,21 +34,35 @@ class AuthPage extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 40), // Space below title
-      
+
           // Authentication Buttons
           GoogleButton(
-            onPressed: () async {
-              // Handle Google sign-in
-            },
-          ),
-         
+              onPressed: () async {
+                try {
+                  User? user = await appwriteService.signInWithGoogle();
+                  if (user != null) {
+                    print('Signed in as ${user.name}');
+                    // Handle successful sign-in
+                  } else {
+                    throw Exception('Failed to sign in with Google');
+                  }
+                } catch (e) {
+                  print('Error: $e');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error signing in: $e'),
+                    ),
+                  );
+                }
+              },
+            ),
+
           MicrosoftButton(
             onPressed: () async {
               // Handle Microsoft sign-in
             },
           ),
-         
-      
+
           AppleButton(
             onPressed: () async {
               // Handle Apple sign-in
