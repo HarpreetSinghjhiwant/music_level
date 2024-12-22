@@ -4,7 +4,7 @@ An ai based music generation app.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+This project is a starting point for a Flutter application for creatin songs.
 
 A few resources to get you started if this is your first Flutter project:
 
