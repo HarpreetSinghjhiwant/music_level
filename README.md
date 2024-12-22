@@ -1,6 +1,6 @@
 # music_level
 
-A new Flutter project.
+An ai based music generation app.
 
 ## Getting Started
 
