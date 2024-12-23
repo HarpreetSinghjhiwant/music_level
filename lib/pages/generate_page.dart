@@ -30,6 +30,10 @@ class _GeneratePageState extends State<GeneratePage>
     'Hip-Hop',
     'Jazz',
     'Electronic',
+    'Blues',
+    'Country',
+    'Reggae',
+    'Metal',
   ];
   final musicGenService = MusicGenerationService();
 
