@@ -88,6 +88,12 @@ void _playPauseMusic() async {
             fontWeight: FontWeight.bold,
           ),
         ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
         backgroundColor: Colors.black,
         elevation: 0,
       ),

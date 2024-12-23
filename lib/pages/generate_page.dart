@@ -244,20 +244,6 @@ class _GeneratePageState extends State<GeneratePage>
                               ),
                               ),
                             );
-                            // showDialog(
-                            //   context: context,
-                            //   builder: (_) => AlertDialog(
-                            //     title: const Text('Music Generated'),
-                            //     content: Text(
-                            //         'Music has been generated and saved to $musicFilePath. and here are lyrics \n $lyrics'),
-                            //     actions: [
-                            //       TextButton(
-                            //         onPressed: () => Navigator.pop(context),
-                            //         child: const Text('OK'),
-                            //       ),
-                            //     ],
-                            //   ),
-                            // );
                           }
                         } catch (e) {
                           if (mounted) {
