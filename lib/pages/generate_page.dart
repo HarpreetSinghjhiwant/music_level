@@ -1,6 +1,13 @@
+import 'dart:io';
 import 'package:control_style/control_style.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:music_level/components/generate_loader.dart';
+import 'package:music_level/pages/music_preview_page.dart';
+import 'package:music_level/services/gemini_service.dart';
+import 'package:music_level/services/music_gen_service.dart';
 
 class GeneratePage extends StatefulWidget {
   const GeneratePage({super.key});
@@ -9,10 +16,12 @@ class GeneratePage extends StatefulWidget {
   State<GeneratePage> createState() => _GeneratePageState();
 }
 
-class _GeneratePageState extends State<GeneratePage> with SingleTickerProviderStateMixin {
+class _GeneratePageState extends State<GeneratePage>
+    with SingleTickerProviderStateMixin {
   String? selectedMusicType;
   String inputMethod = 'Lyrics';
   final TextEditingController inputController = TextEditingController();
+  bool isLoading = false;
 
   final List<String> musicTypes = [
     'Pop',
@@ -22,6 +31,7 @@ class _GeneratePageState extends State<GeneratePage> with SingleTickerProviderSt
     'Jazz',
     'Electronic',
   ];
+  final musicGenService = MusicGenerationService();
 
   late AnimationController controller;
   late Tween<double> tween;
@@ -61,139 +71,142 @@ class _GeneratePageState extends State<GeneratePage> with SingleTickerProviderSt
         elevation: 0,
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Select Music Type Dropdown
-              Text(
-                'Select Music Type:',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: Colors.grey[900],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: DropdownButton<String>(
-                  hint: Text(
-                    'Select a type',
-                    style: GoogleFonts.poppins(color: Colors.white),
-                  ),
-                  value: selectedMusicType,
-                  onChanged: (newValue) {
-                    setState(() {
-                      selectedMusicType = newValue;
-                    });
-                  },
-                  dropdownColor: Colors.grey[900],
-                  style: GoogleFonts.poppins(color: Colors.white),
-                  items: musicTypes.map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  isExpanded: true,
-                  underline: SizedBox.shrink(),
-                ),
-              ),
+        child: isLoading
+            ? LoadingAnimation()
+            : Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Select Music Type Dropdown
+                    Text(
+                      'Select Music Type:',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[900],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: DropdownButton<String>(
+                        hint: Text(
+                          'Select a type',
+                          style: GoogleFonts.poppins(color: Colors.white),
+                        ),
+                        value: selectedMusicType,
+                        onChanged: (newValue) {
+                          setState(() {
+                            selectedMusicType = newValue;
+                          });
+                        },
+                        dropdownColor: Colors.grey[900],
+                        style: GoogleFonts.poppins(color: Colors.white),
+                        items: musicTypes
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        isExpanded: true,
+                        underline: SizedBox.shrink(),
+                      ),
+                    ),
 
-              const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-              // Input Method Section
-              Text(
-                'Input Method:',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Radio<String>(
-                    value: 'Lyrics',
-                    groupValue: inputMethod,
-                    onChanged: (value) {
-                      setState(() {
-                        inputMethod = value!;
-                      });
-                    },
-                    activeColor: Colors.pink,
-                  ),
-                  Text(
-                    'Lyrics',
-                    style: GoogleFonts.poppins(color: Colors.white),
-                  ),
-                  const SizedBox(width: 20),
-                  Radio<String>(
-                    value: 'Topic',
-                    groupValue: inputMethod,
-                    onChanged: (value) {
-                      setState(() {
-                        inputMethod = value!;
-                      });
-                    },
-                    activeColor: Colors.pink,
-                  ),
-                  Text(
-                    'Topic',
-                    style: GoogleFonts.poppins(color: Colors.white),
-                  ),
-                ],
-              ),
+                    // Input Method Section
+                    Text(
+                      'Input Method:',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Radio<String>(
+                          value: 'Lyrics',
+                          groupValue: inputMethod,
+                          onChanged: (value) {
+                            setState(() {
+                              inputMethod = value!;
+                            });
+                          },
+                          activeColor: Colors.pink,
+                        ),
+                        Text(
+                          'Lyrics',
+                          style: GoogleFonts.poppins(color: Colors.white),
+                        ),
+                        const SizedBox(width: 20),
+                        Radio<String>(
+                          value: 'Topic',
+                          groupValue: inputMethod,
+                          onChanged: (value) {
+                            setState(() {
+                              inputMethod = value!;
+                            });
+                          },
+                          activeColor: Colors.pink,
+                        ),
+                        Text(
+                          'Topic',
+                          style: GoogleFonts.poppins(color: Colors.white),
+                        ),
+                      ],
+                    ),
 
-              const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-              // Input Field for Lyrics or Topic
-              Text(
-                'Enter $inputMethod:',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: inputController,
-                style: const TextStyle(color: Colors.white),
-                maxLines: inputMethod == 'Lyrics' ? 4 : 2, // Increase lines for Lyrics
-                minLines: 1, // Allow a minimum of 1 line for Topic
-                decoration: InputDecoration(
-                  hintText: 'Type your $inputMethod here...',
-                  hintStyle: TextStyle(color: Colors.grey[500]),
-                  filled: true,
-                  fillColor: Colors.grey[900],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: const EdgeInsets.all(16.0),
-                ),
-              ),
+                    // Input Field for Lyrics or Topic
+                    Text(
+                      'Enter $inputMethod:',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: inputController,
+                      style: const TextStyle(color: Colors.white),
+                      maxLines: inputMethod == 'Lyrics'
+                          ? 4
+                          : 2, // Increase lines for Lyrics
+                      minLines: 1, // Allow a minimum of 1 line for Topic
+                      decoration: InputDecoration(
+                        hintText: 'Type your $inputMethod here...',
+                        hintStyle: TextStyle(color: Colors.grey[500]),
+                        filled: true,
+                        fillColor: Colors.grey[900],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.all(16.0),
+                      ),
+                    ),
 
-              const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-              // Glowing Animated Generate Button
-              Center(
-                child: AnimatedBuilder(
-                  animation: animation,
-                  builder: (context, child) {
-                    return TextButton(
-                      onPressed: () {
+                    // Glowing Animated Generate Button
+                    Center(
+                        child: TextButton(
+                      onPressed: () async {
                         // Handle generation logic
                         final musicType = selectedMusicType ?? 'Any';
                         final input = inputController.text;
+                        final method = inputMethod;
                         if (input.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -203,21 +216,73 @@ class _GeneratePageState extends State<GeneratePage> with SingleTickerProviderSt
                           );
                           return;
                         }
-                        showDialog(
-                          context: context,
-                          builder: (_) => AlertDialog(
-                            title: const Text('Generating Music'),
-                            content: Text(
-                              'Generating $musicType music based on $inputMethod: "$input".',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('OK'),
+                        setState(() {
+                          isLoading = true;
+                        });
+
+                        String lyrics = input;
+                        if (method == 'Topic') {
+                          lyrics = await generateLyrics(
+                              'Generate  song lyrics matching this topic: $input');
+                        }
+
+                        final outputFilePath =
+                            '${Directory.systemTemp.path}/generated_music.mp3'; // Adjust the path as necessary
+                        try {
+                          final musicFilePath =
+                              await musicGenService.generateMusicFromLyrics(
+                                  'Generate a $musicType song matching these lyrics: \n$lyrics',
+                                  outputFilePath);
+                          if (mounted) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                              builder: (context) => MusicPreviewPage(
+                                musicType: musicType,
+                                lyrics: lyrics,
+                                audioUrl: musicFilePath,
                               ),
-                            ],
-                          ),
-                        );
+                              ),
+                            );
+                            // showDialog(
+                            //   context: context,
+                            //   builder: (_) => AlertDialog(
+                            //     title: const Text('Music Generated'),
+                            //     content: Text(
+                            //         'Music has been generated and saved to $musicFilePath. and here are lyrics \n $lyrics'),
+                            //     actions: [
+                            //       TextButton(
+                            //         onPressed: () => Navigator.pop(context),
+                            //         child: const Text('OK'),
+                            //       ),
+                            //     ],
+                            //   ),
+                            // );
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            showDialog(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                title: const Text('Error'),
+                                content: Text(
+                                    'An error occurred while generating music: $e'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text('OK'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                        } finally {
+                          if (mounted) {
+                            setState(() {
+                              isLoading = false;
+                            });
+                          }
+                        }
                       },
                       style: TextButton.styleFrom(
                         fixedSize: const Size(300, 50),
@@ -227,7 +292,8 @@ class _GeneratePageState extends State<GeneratePage> with SingleTickerProviderSt
                               gradient: LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.topRight,
-                                colors: _generateGradientColors(animation.value),
+                                colors:
+                                    _generateGradientColors(animation.value),
                                 stops: _generateGradientStops(),
                               ),
                               offset: const Offset(-4, 4),
@@ -248,15 +314,12 @@ class _GeneratePageState extends State<GeneratePage> with SingleTickerProviderSt
                           color: Colors.white,
                         ),
                       ),
-                    );
-                  },
+                    )),
+
+                    const Spacer(),
+                  ],
                 ),
               ),
-
-              const Spacer(),
-            ],
-          ),
-        ),
       ),
     );
   }

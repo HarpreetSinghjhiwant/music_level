@@ -48,17 +48,18 @@ class _MusicPreviewPageState extends State<MusicPreviewPage> {
     super.dispose();
   }
 
-  void _playPauseMusic() async {
-    if (isPlaying) {
-      await _audioPlayer.pause();
-    } else {
-      // Play the audio from the URL
-      await _audioPlayer.play(Uri.parse(widget.audioUrl) as Source);
-    }
-    setState(() {
-      isPlaying = !isPlaying;
-    });
+void _playPauseMusic() async {
+  if (isPlaying) {
+    await _audioPlayer.pause();
+  } else {
+    // Convert the Windows file path to a URI
+    final fileUri = Uri.file(widget.audioUrl).toString();
+    await _audioPlayer.play(UrlSource(fileUri));
   }
+  setState(() {
+    isPlaying = !isPlaying;
+  });
+}
 
 
   void _skipForward() {
@@ -145,7 +146,7 @@ class _MusicPreviewPageState extends State<MusicPreviewPage> {
                               icon: Icon(
                                 Icons.skip_previous,
                                 color: Colors.white,
-                                size: 32,
+                                size: 56,
                               ),
                             ),
                             // Play/Pause Button
@@ -154,7 +155,7 @@ class _MusicPreviewPageState extends State<MusicPreviewPage> {
                               icon: Icon(
                                 isPlaying ? Icons.pause : Icons.play_arrow,
                                 color: Colors.white,
-                                size: 32,
+                                size: 56,
                               ),
                             ),
                             // Skip Forward Button
@@ -163,7 +164,7 @@ class _MusicPreviewPageState extends State<MusicPreviewPage> {
                               icon: Icon(
                                 Icons.skip_next,
                                 color: Colors.white,
-                                size: 32,
+                                size: 56,
                               ),
                             ),
                           ],
@@ -171,31 +172,10 @@ class _MusicPreviewPageState extends State<MusicPreviewPage> {
                         const SizedBox(height: 20),
 
                         // Music Slider
-                        Slider(
-                          value: currentTime,
-                          min: 0,
-                          max: totalDuration,
-                          onChanged: _onSliderChanged,
-                          activeColor: Colors.white,
-                          inactiveColor: Colors.grey,
-                        ),
+                        
 
-                        const SizedBox(height: 10),
                         // Display Current Time and Total Duration
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              '${currentTime.toInt()}s',
-                              style: GoogleFonts.poppins(color: Colors.white),
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              '${totalDuration.toInt()}s',
-                              style: GoogleFonts.poppins(color: Colors.white),
-                            ),
-                          ],
-                        ),
+      
                       ],
                     ),
                   ),
