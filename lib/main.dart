@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:music_level/pages/auth/login_page.dart';
 import 'package:music_level/pages/auth/signup_page.dart';
@@ -9,7 +10,10 @@ import 'package:music_level/services/appwrite_service.dart';
 AppwriteService appwriteService = AppwriteService();
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
-
+  SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+]);
   // Load environment variables
   await dotenv.load(fileName: ".env");
   runApp(const MyApp());

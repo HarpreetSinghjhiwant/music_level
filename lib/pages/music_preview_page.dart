@@ -201,9 +201,11 @@ void _playPauseMusic() async {
                       color: Colors.grey[900],
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(
+                    child: SingleChildScrollView(
+                      child: Text(
                       widget.lyrics,
                       style: GoogleFonts.poppins(color: Colors.white, fontSize: 16),
+                      ),
                     ),
                   ),
 
