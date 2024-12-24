@@ -2,7 +2,6 @@ import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/enums.dart';
 import 'package:appwrite/models.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 class AppwriteService {
   late Client _client;
@@ -19,40 +18,16 @@ class AppwriteService {
     _databases = Databases(_client);
     _storage = Storage(_client);
   }
-
-  Future<User?> signInWithGoogle() async {
-    try {
-      final GoogleSignIn googleSignIn = GoogleSignIn(
-        clientId: dotenv.env['GOOGLE_CLIENT_ID'], // Add this line
-      );
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-      if (googleUser == null) {
-        // The user canceled the sign-in
-        return null;
-      }
-
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
-      final session = await _account.createOAuth2Session(
-        provider: OAuthProvider.google,
-        success: 'https://your-app-url.com/success', // Replace with your success URL
-        failure: 'https://your-app-url.com/failure', // Replace with your failure URL
-        scopes: ['email'],
-      );
-
-      return session.user;
-    } catch (e) {
-      print('Error signing in with Google: $e');
-      return null;
-    }
-  }
+  final databaseId = dotenv.env['DATABASE_ID'];
+  final collectionId = dotenv.env['COLLECTION_ID'];
+  final bucketId = dotenv.env['BUCKET_ID'];
 
   Future<Document?> createDocument(
-      String databaseId, String collectionId, Map<String, dynamic> data) async {
+        Map<String, dynamic> data) async {
     try {
       final document = await _databases.createDocument(
-          databaseId: databaseId,
-          collectionId: collectionId,
+          databaseId: databaseId!,
+          collectionId: collectionId!,
           documentId: 'unique()',
           permissions: [
             Permission.read(Role.user('[USER_ID]')),
@@ -72,16 +47,66 @@ class AppwriteService {
     }
   }
 
-  Future<File?> uploadFile(String bucketId, String filePath) async {
+  Future<File?> uploadFile( String filePath) async {
     try {
       final file = await _storage.createFile(
-        bucketId: bucketId,
+        bucketId: bucketId!,
         fileId: 'unique()',
         file: InputFile.fromPath(path: filePath),
       );
       return file;
     } catch (e) {
       print('Error uploading file: $e');
+      return null;
+    }
+  }
+
+  /// Sign up with name, email, and password
+  Future<User?> signUp(String name, String email, String password) async {
+    try {
+      final user = await _account.create(
+        userId: 'unique()', 
+        email: email, 
+        password: password,
+        name: name,
+      );
+      return user;
+    } catch (e) {
+      print('Error signing up: $e');
+      return null;
+    }
+  }
+
+  /// Login with email and password
+  Future<Session?> login(String email, String password) async {
+    try {
+      final session = await _account.createEmailPasswordSession(
+        email: email,
+        password: password,
+      );
+      return session;
+    } catch (e) {
+      print('Error logging in: $e');
+      return null;
+    }
+  }
+
+  /// Logout the current user
+  Future<void> logout() async {
+    try {
+      await _account.deleteSession(sessionId: 'current');
+    } catch (e) {
+      print('Error logging out: $e');
+    }
+  }
+
+  /// Get the current logged-in user's details
+  Future<User?> getCurrentUser() async {
+    try {
+      final user = await _account.get();
+      return user;
+    } catch (e) {
+      print('Error fetching user: $e');
       return null;
     }
   }

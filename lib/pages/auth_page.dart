@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:music_level/components/auth_parts/apple_button.dart';
 import 'package:music_level/components/auth_parts/google_button.dart';
 import 'package:music_level/components/auth_parts/microsoft_button.dart';
-import 'package:music_level/main.dart';
 
 class AuthPage extends StatelessWidget {
   const AuthPage({super.key});
@@ -38,22 +37,7 @@ class AuthPage extends StatelessWidget {
           // Authentication Buttons
           GoogleButton(
               onPressed: () async {
-                try {
-                  User? user = await appwriteService.signInWithGoogle();
-                  if (user != null) {
-                    print('Signed in as ${user.name}');
-                    // Handle successful sign-in
-                  } else {
-                    throw Exception('Failed to sign in with Google');
-                  }
-                } catch (e) {
-                  print('Error: $e');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Error signing in: $e'),
-                    ),
-                  );
-                }
+                
               },
             ),
 

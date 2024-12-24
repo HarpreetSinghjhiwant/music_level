@@ -5,9 +5,9 @@ import 'package:music_level/pages/auth/login_page.dart';
 import 'package:music_level/pages/auth/signup_page.dart';
 import 'package:music_level/pages/auth_page.dart';
 import 'package:music_level/pages/main_screen.dart';
+import 'package:music_level/pages/splash_screen.dart';
 import 'package:music_level/services/appwrite_service.dart';
 
-AppwriteService appwriteService = AppwriteService();
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([
@@ -32,12 +32,13 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
         useMaterial3: true,
       ),
-      initialRoute: '/', // Set initial route to Login page
+      initialRoute: '/loading', // Set initial route to Login page
       routes: {
         '/': (context) => const MainScreen(),
         '/auth': (context) => const AuthPage(),
-        '/login': (context) => const LoginPage(),
-        '/signup': (context) => const SignUpPage(),
+        '/login': (context) => LoginPage(),
+        '/signup': (context) => SignUpPage(),
+        '/loading': (context) => SplashScreen(),
       },
     );
   }
