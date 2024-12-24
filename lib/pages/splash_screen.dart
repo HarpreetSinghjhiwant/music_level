@@ -24,15 +24,15 @@ class SplashScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Center(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(50), // Circular border
-                      child: Image.asset(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(50), // Circular border
+                    child: Image.asset(
                       'assets/icon.jpg', // Replace with your logo path
-                        width: MediaQuery.of(context).size.width * 0.45,
-                        height: MediaQuery.of(context).size.width * 0.45,
-                      ),
+                      width: MediaQuery.of(context).size.width * 0.45,
+                      height: MediaQuery.of(context).size.width * 0.45,
                     ),
-                    ),
+                  ),
+                ),
                 const SizedBox(height: 24),
                 Text(
                   'Music Level',
@@ -52,12 +52,16 @@ class SplashScreen extends StatelessWidget {
         } else if (snapshot.hasError || snapshot.data == false) {
           // If not logged in, navigate to login page
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            Navigator.pushReplacementNamed(context, '/login');
+            if (context.mounted) {
+              Navigator.pushReplacementNamed(context, '/login');
+            }
           });
-        } else {
+        } else if (snapshot.hasData && snapshot.data == true) {
           // If logged in, navigate to the main page
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            Navigator.pushReplacementNamed(context, '/');
+            if (context.mounted) {
+              Navigator.pushReplacementNamed(context, '/');
+            }
           });
         }
 

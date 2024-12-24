@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:music_level/pages/auth/login_page.dart';
 import 'package:music_level/pages/auth/signup_page.dart';
-import 'package:music_level/pages/auth_page.dart';
 import 'package:music_level/pages/main_screen.dart';
 import 'package:music_level/pages/splash_screen.dart';
 
@@ -34,7 +33,6 @@ class MyApp extends StatelessWidget {
       initialRoute: '/loading', // Set initial route to Login page
       routes: {
         '/': (context) => const MainScreen(),
-        '/auth': (context) => const AuthPage(),
         '/login': (context) => LoginPage(),
         '/signup': (context) => SignUpPage(),
         '/loading': (context) => SplashScreen(),
