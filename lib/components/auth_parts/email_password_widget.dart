@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:music_level/services/appwrite_service.dart';
+
 class EmailPasswordWidget extends StatefulWidget {
   final bool isSignUp; // Flag to determine whether it's for Sign Up or Login
   const EmailPasswordWidget({super.key, required this.isSignUp});
   @override
   EmailPasswordWidgetState createState() => EmailPasswordWidgetState();
 }
+
 class EmailPasswordWidgetState extends State<EmailPasswordWidget> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _nameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool isLoading = false;
+  AppwriteService appwriteService = AppwriteService();
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -51,15 +57,11 @@ class EmailPasswordWidgetState extends State<EmailPasswordWidget> {
             if (widget.isSignUp) ...[
               const SizedBox(height: 16.0),
               CustomTextField(
-                controller: TextEditingController(),
-                hintText: 'Confirm Password',
-                obscureText: true,
+                controller: _nameController,
+                hintText: 'Name',
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please confirm your password';
-                  }
-                  if (value != _passwordController.text) {
-                    return 'Passwords do not match';
+                    return 'Please Enter your name';
                   }
                   return null;
                 },
@@ -92,16 +94,55 @@ class EmailPasswordWidgetState extends State<EmailPasswordWidget> {
                 height: 50,
                 width: double.infinity, // Make the button full-width
                 child: ElevatedButton(
-                  onPressed: () {
+                  // Inside the ElevatedButton's onPressed callback
+                  onPressed: () async {
+                    setState(() {
+                      isLoading = true;
+                    });
                     if (_formKey.currentState?.validate() ?? false) {
-                      // Handle login or sign-up logic
                       if (widget.isSignUp) {
-                        // Sign-Up Logic
+                        // Handle sign-up logic
+                        final success = await appwriteService.signUp(
+                          _nameController.text,
+                          _emailController.text,
+                          _passwordController.text,
+                        );
+                        if (success != Null) {
+                          // Navigate to home after successful sign-up
+                          Navigator.pushReplacementNamed(context, '/');
+                        } else {
+                          // Handle sign-up failure (e.g., show an error message)
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content:
+                                    Text('Login failed. Please try again.')),
+                          );
+                        }
                       } else {
-                        // Login Logic
+                        // Handle login logic
+                        final success = await appwriteService.login(
+                          _emailController.text,
+                          _passwordController.text,
+                        );
+                        if (success != Null) {
+                          // Navigate to home after successful login
+                          Navigator.pushReplacementNamed(context, '/');
+                        } else {
+                          // Handle login failure (e.g., show an error message)
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content:
+                                    Text('Login failed. Please try again.')),
+                          );
+                        }
                       }
+                      setState(() {
+                        isLoading = false;
+                      });
                     }
                   },
+
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.amber, // Button color
                     shape: RoundedRectangleBorder(
@@ -111,8 +152,11 @@ class EmailPasswordWidgetState extends State<EmailPasswordWidget> {
                     shadowColor: Colors.black.withOpacity(0.3),
                     elevation: 8,
                   ),
-                  child: Text(
-                    widget.isSignUp ? 'Sign Up' : 'Sign In', // Change text based on mode
+                  child:isLoading? Center(child: CircularProgressIndicator(color: Colors.white))
+                  : Text(
+                    widget.isSignUp
+                        ? 'Sign Up'
+                        : 'Sign In', // Change text based on mode
                     style: const TextStyle(
                       fontSize: 18.0,
                       fontWeight: FontWeight.bold,
@@ -129,6 +173,7 @@ class EmailPasswordWidgetState extends State<EmailPasswordWidget> {
     );
   }
 }
+
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
@@ -149,7 +194,8 @@ class CustomTextField extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12.0),
         border: Border.all(color: Colors.white.withOpacity(0.3)),
-        color: Colors.white.withOpacity(0.1), // Subtle background for input field
+        color:
+            Colors.white.withOpacity(0.1), // Subtle background for input field
       ),
       child: TextFormField(
         cursorColor: Colors.white,
@@ -159,7 +205,7 @@ class CustomTextField extends StatelessWidget {
         validator: validator,
         decoration: InputDecoration(
           contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+              const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
           hintText: hintText,
           hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
           focusedBorder: OutlineInputBorder(

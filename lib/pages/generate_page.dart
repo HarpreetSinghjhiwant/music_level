@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:music_level/components/generate_loader.dart';
 import 'package:music_level/pages/music_preview_page.dart';
+import 'package:music_level/services/appwrite_service.dart';
 import 'package:music_level/services/gemini_service.dart';
 import 'package:music_level/services/music_gen_service.dart';
 
@@ -36,6 +37,7 @@ class _GeneratePageState extends State<GeneratePage>
     'Metal',
   ];
   final musicGenService = MusicGenerationService();
+  AppwriteService  appwriteService = AppwriteService();
 
   late AnimationController controller;
   late Tween<double> tween;
@@ -238,6 +240,8 @@ class _GeneratePageState extends State<GeneratePage>
                                   'Generate a $musicType song matching these lyrics: \n$lyrics',
                                   outputFilePath);
                           if (mounted) {
+                            var Uploadedfile = await appwriteService.uploadFile(musicFilePath);
+                            print(Uploadedfile);
                             Navigator.push(
                               context,
                               MaterialPageRoute(

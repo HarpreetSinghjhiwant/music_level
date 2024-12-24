@@ -39,8 +39,6 @@ dependencies:
   flutter_dotenv: ^5.2.1
   google_generative_ai: ^0.4.6
   appwrite: ^13.1.0
-  google_sign_in: ^6.2.2
-  msal_flutter: ^2.0.1
   audioplayers: ^6.1.0
   flutter_inset_box_shadow: ^1.0.8
   slide_to_act: ^2.0.2
