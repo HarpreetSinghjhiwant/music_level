@@ -1,5 +1,4 @@
 import 'package:appwrite/appwrite.dart';
-import 'package:appwrite/enums.dart';
 import 'package:appwrite/models.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 

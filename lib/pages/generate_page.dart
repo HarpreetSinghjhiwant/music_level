@@ -2,8 +2,6 @@ import 'dart:io';
 import 'package:control_style/control_style.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:music_level/components/generate_loader.dart';
 import 'package:music_level/pages/music_preview_page.dart';
 import 'package:music_level/services/appwrite_service.dart';

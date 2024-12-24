@@ -1,4 +1,3 @@
-import 'package:appwrite/models.dart';
 import 'package:flutter/material.dart';
 import 'package:music_level/components/auth_parts/apple_button.dart';
 import 'package:music_level/components/auth_parts/google_button.dart';
