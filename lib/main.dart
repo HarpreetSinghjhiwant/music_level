@@ -6,7 +6,6 @@ import 'package:music_level/pages/auth/signup_page.dart';
 import 'package:music_level/pages/auth_page.dart';
 import 'package:music_level/pages/main_screen.dart';
 import 'package:music_level/pages/splash_screen.dart';
-import 'package:music_level/services/appwrite_service.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();

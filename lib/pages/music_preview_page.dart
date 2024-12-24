@@ -72,10 +72,6 @@ void _playPauseMusic() async {
     _audioPlayer.seek(Duration(seconds: newPosition.toInt()));
   }
 
-  void _onSliderChanged(double value) {
-    _audioPlayer.seek(Duration(seconds: value.toInt()));
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

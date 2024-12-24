@@ -1,5 +1,4 @@
 import 'package:appwrite/appwrite.dart';
-import 'package:appwrite/enums.dart';
 import 'package:appwrite/models.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -9,19 +8,21 @@ class AppwriteService {
   late Databases _databases;
   late Storage _storage;
 
+  final String? appwriteUrl = dotenv.env['APPWRITE_URL'];
+  final String? projectId = dotenv.env['PROJECT_ID'];
+  final String? databaseId = dotenv.env['DATABASE_ID'];
+  final String? collectionId = dotenv.env['COLLECTION_ID'];
+  final String? bucketId = dotenv.env['BUCKET_ID'];
+
   AppwriteService() {
     _client = Client()
-      ..setEndpoint('https://${dotenv.env['APPWRITE_URL']}') // Ensure this is correctly loaded
-      ..setProject(dotenv.env['PROJECT_ID']!);
+      ..setEndpoint('https://$appwriteUrl}') // Ensure this is correctly loaded
+      ..setProject(projectId!);
 
     _account = Account(_client);
     _databases = Databases(_client);
     _storage = Storage(_client);
   }
-
-  final String? databaseId = dotenv.env['DATABASE_ID'];
-  final String? collectionId = dotenv.env['COLLECTION_ID'];
-  final String? bucketId = dotenv.env['BUCKET_ID'];
 
   Future<Document?> createDocument(Map<String, dynamic> data) async {
     try {
