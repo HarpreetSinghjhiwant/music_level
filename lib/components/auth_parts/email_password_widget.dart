@@ -152,7 +152,10 @@ class EmailPasswordWidgetState extends State<EmailPasswordWidget> {
                     shadowColor: Colors.black.withOpacity(0.3),
                     elevation: 8,
                   ),
-                  child:isLoading? Center(child: CircularProgressIndicator(color: Colors.white))
+                  child:isLoading? Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(child: CircularProgressIndicator(color: Colors.white)),
+                  )
                   : Text(
                     widget.isSignUp
                         ? 'Sign Up'

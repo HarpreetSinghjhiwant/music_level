@@ -11,35 +11,36 @@ class AppwriteService {
 
   AppwriteService() {
     _client = Client()
-      ..setEndpoint('https://${dotenv.env['APPWRITE_URL']}')
-      ..setProject('${dotenv.env['PROJECT_ID']}');
+      ..setEndpoint('https://${dotenv.env['APPWRITE_URL']}') // Ensure this is correctly loaded
+      ..setProject(dotenv.env['PROJECT_ID']!);
 
     _account = Account(_client);
     _databases = Databases(_client);
     _storage = Storage(_client);
   }
-  final databaseId = dotenv.env['DATABASE_ID'];
-  final collectionId = dotenv.env['COLLECTION_ID'];
-  final bucketId = dotenv.env['BUCKET_ID'];
 
-  Future<Document?> createDocument(
-        Map<String, dynamic> data) async {
+  final String? databaseId = dotenv.env['DATABASE_ID'];
+  final String? collectionId = dotenv.env['COLLECTION_ID'];
+  final String? bucketId = dotenv.env['BUCKET_ID'];
+
+  Future<Document?> createDocument(Map<String, dynamic> data) async {
     try {
       final document = await _databases.createDocument(
-          databaseId: databaseId!,
-          collectionId: collectionId!,
-          documentId: 'unique()',
-          permissions: [
-            Permission.read(Role.user('[USER_ID]')),
-            Permission.write(Role.user('[USER_ID]'))
-          ],
-          data: {
-            'name': data['name'],
-            'type': data['type'],
-            'lyrics': data['lyrics'],
-            'audio_url': data['audio_url'],
-            'user_id': data['user_id']
-          });
+        databaseId: databaseId!,
+        collectionId: collectionId!,
+        documentId: 'unique()',
+        permissions: [
+          Permission.read(Role.user(data['user_id'])),
+          Permission.write(Role.user(data['user_id']))
+        ],
+        data: {
+          'name': data['name'],
+          'type': data['type'],
+          'lyrics': data['lyrics'],
+          'audio_url': data['audio_url'],
+          'user_id': data['user_id']
+        },
+      );
       return document;
     } catch (e) {
       print('Error creating document: $e');
@@ -47,7 +48,7 @@ class AppwriteService {
     }
   }
 
-  Future<File?> uploadFile( String filePath) async {
+  Future<File?> uploadFile(String filePath) async {
     try {
       final file = await _storage.createFile(
         bucketId: bucketId!,

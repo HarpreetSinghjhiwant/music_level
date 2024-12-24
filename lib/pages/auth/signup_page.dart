@@ -17,12 +17,25 @@ class SignUpPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Sign Up',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white, // White text color
+                  Center(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(50), // Circular border
+                      child: Image.asset(
+                      'assets/icon.jpg', // Replace with your logo path
+                      width: 100,
+                      height: 100,
+                      ),
+                    ),
+                    ),
+                    const SizedBox(height: 24),
+                  Center(
+                    child: const Text(
+                      'Sign Up',
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white, // White text color
+                      ),
                     ),
                   ),
                   const SizedBox(height: 40),
