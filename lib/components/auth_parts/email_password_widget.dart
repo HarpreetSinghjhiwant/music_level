@@ -91,7 +91,7 @@ class EmailPasswordWidgetState extends State<EmailPasswordWidget> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
               child: SizedBox(
-                height: 50,
+                height: 60,
                 width: double.infinity, // Make the button full-width
                 child: ElevatedButton(
                   // Inside the ElevatedButton's onPressed callback
@@ -152,7 +152,7 @@ class EmailPasswordWidgetState extends State<EmailPasswordWidget> {
                     shadowColor: Colors.black.withOpacity(0.3),
                     elevation: 8,
                   ),
-                  child:isLoading? Center(child: CircularProgressIndicator(color: Colors.white))
+                  child:isLoading? Center(child: CircularProgressIndicator(color: Colors.white,strokeWidth: 3.0,))
                   : Text(
                     widget.isSignUp
                         ? 'Sign Up'
