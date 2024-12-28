@@ -16,8 +16,9 @@ class AppwriteService {
 
   AppwriteService() {
     _client = Client()
-      ..setEndpoint('https://$appwriteUrl}') // Ensure this is correctly loaded
-      ..setProject(projectId!);
+      ..setEndpoint(appwriteUrl!) // Ensure this is correctly loaded
+      ..setProject(projectId!)
+      ..setSelfSigned();
 
     _account = Account(_client);
     _databases = Databases(_client);
@@ -32,14 +33,14 @@ class AppwriteService {
         documentId: 'unique()',
         permissions: [
           Permission.read(Role.user(data['user_id'])),
-          Permission.write(Role.user(data['user_id']))
+          Permission.write(Role.user(data['user_id'])),
         ],
         data: {
           'name': data['name'],
           'type': data['type'],
           'lyrics': data['lyrics'],
           'audio_url': data['audio_url'],
-          'user_id': data['user_id']
+          'user_id': data['user_id'],
         },
       );
       return document;
@@ -64,32 +65,30 @@ class AppwriteService {
   }
 
   /// Sign up with name, email, and password
-  Future<User?> signUp(String name, String email, String password) async {
+  Future<String?> signUp(String name, String email, String password) async {
     try {
-      final user = await _account.create(
-        userId: 'unique()', 
+      await _account.create(
+        userId: ID.unique(), 
         email: email, 
         password: password,
         name: name,
       );
-      return user;
-    } catch (e) {
-      print('Error signing up: $e');
-      return null;
+      return "success";
+    } on AppwriteException catch (e) {
+      return 'SignUp Error: ${e.message}';
     }
   }
 
   /// Login with email and password
-  Future<Session?> login(String email, String password) async {
+  Future<String?> login(String email, String password) async {
     try {
-      final session = await _account.createEmailPasswordSession(
+      await _account.createEmailPasswordSession(
         email: email,
         password: password,
       );
-      return session;
-    } catch (e) {
-      print('Error logging in: $e');
-      return null;
+      return "success";
+    } on AppwriteException catch (e) {
+      return 'Login Error: ${e.message}';
     }
   }
 
@@ -103,13 +102,23 @@ class AppwriteService {
   }
 
   /// Get the current logged-in user's details
-  Future<User?> getCurrentUser() async {
+  Future<String?> getCurrentUser() async {
     try {
       final user = await _account.get();
-      return user;
+      print('User details: ${user.toMap()}');
+      return user.$id;
     } catch (e) {
-      print('Error fetching user: $e');
+      print('Error getting current user: $e');
       return null;
+    }
+  }
+
+  Future<bool?> checkSession() async {
+    try {
+      await _account.getSession(sessionId: "current");
+      return true;
+    } on AppwriteException catch (e) {
+      return false;
     }
   }
 }
