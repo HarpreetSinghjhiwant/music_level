@@ -15,6 +15,7 @@ class EmailPasswordWidgetState extends State<EmailPasswordWidget> {
   final _formKey = GlobalKey<FormState>();
   bool isLoading = false;
   AppwriteService appwriteService = AppwriteService();
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -96,53 +97,56 @@ class EmailPasswordWidgetState extends State<EmailPasswordWidget> {
                 child: ElevatedButton(
                   // Inside the ElevatedButton's onPressed callback
                   onPressed: () async {
-                    setState(() {
-                      isLoading = true;
-                    });
                     if (_formKey.currentState?.validate() ?? false) {
-                      if (widget.isSignUp) {
-                        // Handle sign-up logic
-                        final success = await appwriteService.signUp(
-                          _nameController.text,
-                          _emailController.text,
-                          _passwordController.text,
-                        );
-                        if (success != Null) {
-                          // Navigate to home after successful sign-up
-                          Navigator.pushReplacementNamed(context, '/');
-                        } else {
-                          // Handle sign-up failure (e.g., show an error message)
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content:
-                                    Text('Login failed. Please try again.')),
-                          );
-                        }
-                      } else {
-                        // Handle login logic
-                        final success = await appwriteService.login(
-                          _emailController.text,
-                          _passwordController.text,
-                        );
-                        if (success != Null) {
-                          // Navigate to home after successful login
-                          Navigator.pushReplacementNamed(context, '/');
-                        } else {
-                          // Handle login failure (e.g., show an error message)
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content:
-                                    Text('Login failed. Please try again.')),
-                          );
-                        }
-                      }
                       setState(() {
-                        isLoading = false;
+                        isLoading = true;
                       });
+                      try {
+                        if (widget.isSignUp) {
+                          // Handle sign-up logic
+                          final result = await appwriteService.signUp(
+                            _nameController.text,
+                            _emailController.text,
+                            _passwordController.text,
+                          );
+                          if (result == 'success') {
+                            // Navigate to home after successful sign-up
+                            Navigator.pushReplacementNamed(context, '/');
+                          } else {
+                            // Show specific error message from Appwrite
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(result!)),
+                            );
+                          }
+                        } else {
+                          // Handle login logic
+                          final result = await appwriteService.login(
+                            _emailController.text,
+                            _passwordController.text,
+                          );
+                          if (result == 'success') {
+                            // Navigate to home after successful login
+                            Navigator.pushReplacementNamed(context, '/');
+                          } else {
+                            // Show specific error message from Appwrite
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(result!)),
+                            );
+                          }
+                        }
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('An error occurred: $e'),
+                          ),
+                        );
+                      } finally {
+                        setState(() {
+                          isLoading = false;
+                        });
+                      }
                     }
                   },
-
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.amber, // Button color
                     shape: RoundedRectangleBorder(
@@ -152,17 +156,22 @@ class EmailPasswordWidgetState extends State<EmailPasswordWidget> {
                     shadowColor: Colors.black.withOpacity(0.3),
                     elevation: 8,
                   ),
-                  child:isLoading? Center(child: CircularProgressIndicator(color: Colors.white,strokeWidth: 3.0,))
-                  : Text(
-                    widget.isSignUp
-                        ? 'Sign Up'
-                        : 'Sign In', // Change text based on mode
-                    style: const TextStyle(
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
+                  child: isLoading
+                      ? Center(
+                          child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 3.0,
+                        ))
+                      : Text(
+                          widget.isSignUp
+                              ? 'Sign Up'
+                              : 'Sign In', // Change text based on mode
+                          style: const TextStyle(
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
                 ),
               ),
             ),
