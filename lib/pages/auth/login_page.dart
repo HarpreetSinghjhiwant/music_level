@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:music_level/components/auth_parts/email_password_widget.dart';
 import 'package:music_level/components/auth_parts/google_button.dart';
+import 'package:music_level/services/appwrite_service.dart';
 
 class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+  LoginPage({super.key});
+
+  final appwriteService = AppwriteService();
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +78,29 @@ class LoginPage extends StatelessWidget {
                   const SizedBox(height: 20),
                   GoogleButton(
                     onPressed: () async {
-                      // Handle Google login logic here
+                       appwriteService.continueWithGoogle().then((value) {
+                              if (value) {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                  content: Text(
+                                    "Google Login Successful",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  backgroundColor: Colors.green.shade400,
+                                ));
+                                Navigator.pushReplacementNamed(
+                                    context, "/");
+                              } else {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                  content: Text(
+                                    "Google Login Failed",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  backgroundColor: Colors.red.shade400,
+                                ));
+                              }
+                            });
                     },
                   ),
                 ],

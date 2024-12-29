@@ -15,7 +15,6 @@ class EmailPasswordWidgetState extends State<EmailPasswordWidget> {
   final _formKey = GlobalKey<FormState>();
   bool isLoading = false;
   AppwriteService appwriteService = AppwriteService();
-
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -104,41 +103,45 @@ class EmailPasswordWidgetState extends State<EmailPasswordWidget> {
                       try {
                         if (widget.isSignUp) {
                           // Handle sign-up logic
-                          final result = await appwriteService.signUp(
+                          final success = await appwriteService.signUp(
                             _nameController.text,
                             _emailController.text,
                             _passwordController.text,
                           );
-                          if (result == 'success') {
+                          if (success == "success") {
                             // Navigate to home after successful sign-up
                             Navigator.pushReplacementNamed(context, '/');
                           } else {
-                            // Show specific error message from Appwrite
+                            // Handle sign-up failure (e.g., show an error message)
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(result!)),
+                              SnackBar(
+                                  content: Text(
+                                      'Sign-up failed. Please try again. $success')),
                             );
                           }
                         } else {
                           // Handle login logic
-                          final result = await appwriteService.login(
+                          final success = await appwriteService.login(
                             _emailController.text,
                             _passwordController.text,
                           );
-                          if (result == 'success') {
+                          if (success == "success") {
                             // Navigate to home after successful login
                             Navigator.pushReplacementNamed(context, '/');
                           } else {
-                            // Show specific error message from Appwrite
+                            // Handle login failure (e.g., show an error message)
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(result!)),
+                              SnackBar(
+                                  content: Text(
+                                      'Login failed. Please try again. $success')),
                             );
                           }
                         }
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('An error occurred: $e'),
-                          ),
+                              content:
+                                  Text('An error occurred. Please try again. $e')),
                         );
                       } finally {
                         setState(() {
@@ -147,6 +150,7 @@ class EmailPasswordWidgetState extends State<EmailPasswordWidget> {
                       }
                     }
                   },
+
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.amber, // Button color
                     shape: RoundedRectangleBorder(

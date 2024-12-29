@@ -13,20 +13,33 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   void initState() {
+    // _navigateBasedOnUserStatus();
+    appwriteService.checkSession().then((value) {
+      if (value) {
+        Navigator.pushReplacementNamed(context, '/');
+      } else {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    });
     super.initState();
-    _navigateBasedOnUserStatus();
   }
 
   Future<void> _navigateBasedOnUserStatus() async {
-  appwriteService.checkSession().then((value) {
-    if (value!) {
-      Navigator.pushReplacementNamed(context, '/');
-    } else {
-      Navigator.pushReplacementNamed(context, '/login');
+    try {
+      final user = await appwriteService.getCurrentUser();
+      if (!mounted) return; // Ensure context is still valid
+      if (user != null) {
+        Navigator.pushReplacementNamed(context, '/');
+      } else {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    } catch (e) {
+      // Handle errors gracefully
+      print('Error during navigation: $e');
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, '/error'); // Optional error page
     }
-  });
-}
-
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +53,7 @@ class _SplashScreenState extends State<SplashScreen> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(50),
               child: Image.asset(
-                'assets/icon.jpg', // Replace with your logo path
+                'assets/icon.jpg', // Ensure this path is correct
                 width: MediaQuery.of(context).size.width * 0.45,
                 height: MediaQuery.of(context).size.width * 0.45,
               ),
@@ -50,15 +63,13 @@ class _SplashScreenState extends State<SplashScreen> {
           Text(
             'Music Level',
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
-          const Center(
-            child: CircularProgressIndicator(color: Colors.white),
-          ),
+          const CircularProgressIndicator(color: Colors.white),
         ],
       ),
     );

@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:music_level/components/auth_parts/email_password_widget.dart';
 import 'package:music_level/components/auth_parts/google_button.dart';
+import 'package:music_level/services/appwrite_service.dart';
 
 class SignUpPage extends StatelessWidget {
   SignUpPage({super.key});
+
+  final appwriteService = AppwriteService();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,9 +69,38 @@ class SignUpPage extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 20),
+                  Center(
+                    child: const Text(
+                      'Or continue with',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                   GoogleButton(
-                    onPressed: () {
-                      // Handle Google sign-up logic here
+                    onPressed: () async {
+                       appwriteService.continueWithGoogle().then((value) {
+                              if (value) {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                  content: Text(
+                                    "Google Login Successful",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  backgroundColor: Colors.green.shade400,
+                                ));
+                                Navigator.pushReplacementNamed(
+                                    context, "/");
+                              } else {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                  content: Text(
+                                    "Google Login Failed",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  backgroundColor: Colors.red.shade400,
+                                ));
+                              }
+                            });
                     },
                   ),
                 ],

@@ -1,4 +1,5 @@
 import 'package:appwrite/appwrite.dart';
+import 'package:appwrite/enums.dart';
 import 'package:appwrite/models.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -18,7 +19,7 @@ class AppwriteService {
     _client = Client()
       ..setEndpoint(appwriteUrl!) // Ensure this is correctly loaded
       ..setProject(projectId!)
-      ..setSelfSigned();
+      ..setSelfSigned(status: true);
 
     _account = Account(_client);
     _databases = Databases(_client);
@@ -49,6 +50,19 @@ class AppwriteService {
       return null;
     }
   }
+  
+  Future<List<Document>?> getDocuments() async {
+    try {
+      final documents = await _databases.listDocuments(
+        databaseId: databaseId!,
+        collectionId: collectionId!,
+      );
+      return documents.documents;
+    } catch (e) {
+      print('Error retrieving documents: $e');
+      return null;
+    }
+  }
 
   Future<File?> uploadFile(String filePath) async {
     try {
@@ -64,12 +78,11 @@ class AppwriteService {
     }
   }
 
-  /// Sign up with name, email, and password
   Future<String?> signUp(String name, String email, String password) async {
     try {
       await _account.create(
-        userId: ID.unique(), 
-        email: email, 
+        userId: ID.unique(),
+        email: email,
         password: password,
         name: name,
       );
@@ -79,9 +92,9 @@ class AppwriteService {
     }
   }
 
-  /// Login with email and password
   Future<String?> login(String email, String password) async {
     try {
+      // Clear any existing session
       await _account.createEmailPasswordSession(
         email: email,
         password: password,
@@ -92,33 +105,50 @@ class AppwriteService {
     }
   }
 
-  /// Logout the current user
   Future<void> logout() async {
     try {
+      bool? isSessionActive = await checkSession();
+      if (isSessionActive != true) {
+        print('No active session to log out from.');
+        return;
+      }
       await _account.deleteSession(sessionId: 'current');
-    } catch (e) {
-      print('Error logging out: $e');
+      print('Logged out successfully');
+    } on AppwriteException catch (e) {
+      print('Error logging out: ${e.message}');
     }
   }
 
-  /// Get the current logged-in user's details
-  Future<String?> getCurrentUser() async {
+  Future<User?> getCurrentUser() async {
     try {
       final user = await _account.get();
       print('User details: ${user.toMap()}');
-      return user.$id;
-    } catch (e) {
-      print('Error getting current user: $e');
+      return user;
+    } on AppwriteException catch (e) {
+      print('Error getting current user: ${e.message}');
       return null;
     }
   }
 
-  Future<bool?> checkSession() async {
+  Future<bool> checkSession() async {
     try {
       await _account.getSession(sessionId: "current");
       return true;
-    } on AppwriteException catch (e) {
+    } on AppwriteException catch(e) {
+      print('No active session: ${e.message}');
       return false;
     }
   }
+
+  Future<bool> continueWithGoogle() async {
+  try {
+    final response = await _account
+        .createOAuth2Session(provider: OAuthProvider.google, scopes: ["profile", "email"]);
+    print(response);
+    return true;
+  } catch (e) {
+    print("error : ${e.toString()}");
+    return false;
+  }
+}
 }
