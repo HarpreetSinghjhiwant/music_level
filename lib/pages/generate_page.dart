@@ -238,8 +238,8 @@ class _GeneratePageState extends State<GeneratePage>
                                   'Generate a $musicType song matching these lyrics: \n$lyrics',
                                   outputFilePath);
                           if (mounted) {
-                            var Uploadedfile = await appwriteService.uploadFile(musicFilePath);
-                            print(Uploadedfile);
+                            var uploadedfile = await appwriteService.uploadFile(musicFilePath);
+                            print(uploadedfile);
                             Navigator.push(
                               context,
                               MaterialPageRoute(
